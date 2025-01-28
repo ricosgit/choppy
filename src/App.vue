@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TheWelcome from './components/TheWelcome.vue'
+import DisplayImage from '@/components/DisplayImage.vue'
 </script>
 
 <template>
@@ -7,7 +7,7 @@ import TheWelcome from './components/TheWelcome.vue'
   </header>
 
   <main>
-    <TheWelcome />
+    <DisplayImage />
   </main>
 </template>
 
