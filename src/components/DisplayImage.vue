@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { customColors } from '@/main'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { mdiChatOutline, mdiEyeClosed, mdiEyeOutline } from '@mdi/js'
+import { mdiChatOutline, mdiEyeClosed, mdiEyeOutline, mdiVolumeEqual, mdiVolumeHigh } from '@mdi/js'
 
 interface SelectedFiles {
   [normal: string] : File | null,
@@ -37,12 +37,13 @@ const blinkDuration: number = 300
 let intervalId: number = 0
 
 // Talk settings
+const isActiveTalk = ref<boolean>(false)
 const volume = ref<number>(0)
 const audioContext = ref<AudioContext | null>(null)
 const analyser = ref<AnalyserNode | null>(null)
 const microphone = ref<MediaStreamAudioSourceNode | null>(null)
 const animationFrameId = ref<number | null>(null)
-const threshold: number = 0.1 // 音量閾値（0.0〜1.0）
+const threshold = ref<number>(0.1) // 0.0〜1.0
 
 /**
  * Preview the selected image
@@ -78,13 +79,6 @@ const blink = (): void => {
 }
 
 /**
- * switch blink on/off
- */
-const switchBlink = (): void => {
-  isActiveBlink.value = !isActiveBlink.value
-}
-
-/**
  * Analyze audio data and execute processing when the threshold is exceeded
  */
 const processAudio = (): void => {
@@ -99,7 +93,7 @@ const processAudio = (): void => {
 
   // switch display image when the volume exceeds the threshold
   if (displayImage.value !== 'blink') {
-    displayImage.value = volume.value > threshold ? 'talk' : 'normal'
+    displayImage.value = volume.value > threshold.value ? 'talk' : 'normal'
   }
 
   animationFrameId.value = requestAnimationFrame(processAudio);
@@ -165,6 +159,10 @@ onBeforeUnmount(() => {
   </v-row>
   <v-row>
     <v-col>
+      <v-card
+        title="Select Images"
+        class="pa-5"
+      >
         <v-file-input
           accept="image/*"
           label="Normal Image"
@@ -189,21 +187,56 @@ onBeforeUnmount(() => {
           :prepend-icon="mdiChatOutline"
           @change="previewImage('talk')"
         />
+      </v-card>
     </v-col>
     <v-col>
-      <v-select
-        label="Background Color"
-        :items="bgColors"
-        v-model="selectedBgColor"
-      />
-    </v-col>
-    <v-col class="text-center">
-      <v-btn @click="switchBlink">Switch Blink</v-btn>
-    </v-col>
-    <v-col class="text-center">
-      <v-btn @click="startListening">Start Recording</v-btn>
-      <v-btn @click="stopListening">Stop Recording</v-btn>
-      <p>Current volume level: {{ volume.toFixed(2) }}</p>
+      <v-card
+        title="Settings"
+        class="pa-5"
+      >
+        <v-select
+          label="Background Color"
+          v-model="selectedBgColor"
+          :items="bgColors"
+        />
+        <v-switch
+          label="Blink"
+          color="black"
+          v-model="isActiveBlink"
+        />
+        <v-switch
+          label="Talk"
+          color="black"
+          v-model="isActiveTalk"
+          @update:modelValue="isActiveTalk ? startListening() : stopListening()"
+        />
+        <v-slider
+          v-show="isActiveTalk"
+          label="Threshold"
+          min="0"
+          max="1"
+          step="0.1"
+          thumb-label="always"
+          :prepend-icon="mdiVolumeEqual"
+          v-model="threshold"
+        />
+        <v-slider
+          v-show="isActiveTalk"
+          label="Microphone Input"
+          readonly
+          min="0"
+          max="1"
+          thumb-label="always"
+          :prepend-icon="mdiVolumeHigh"
+          v-model="volume"
+        />
+      </v-card>
     </v-col>
   </v-row>
 </template>
+
+<style>
+.v-slider__label {
+  width: 150px;
+}
+</style>
