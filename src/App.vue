@@ -7,7 +7,9 @@ import DisplayImage from '@/components/DisplayImage.vue'
   </header>
 
   <main>
+    <v-container fluid>
     <DisplayImage />
+    </v-container>
   </main>
 </template>
 

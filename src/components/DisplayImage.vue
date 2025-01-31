@@ -106,9 +106,25 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <img :src="`/src/assets/img/${displayImage}.png`" alt="">
+  <v-row no-gutters>
+    <v-col
+      class="text-center"
+    >
+      <img
+        :src="`/src/assets/img/${displayImage}.png`"
+        width="50%"
+        class="my-10"
+      />
+    </v-col>
+  </v-row>
+  <v-row>
+    <v-col class="text-center">
   <v-btn @click="switchBlink">Switch Blink</v-btn>
-  <p>Current volume level: {{ volume.toFixed(2) }}</p>
+    </v-col>
+    <v-col class="text-center">
   <v-btn @click="startListening">Start Recording</v-btn>
   <v-btn @click="stopListening">Stop Recording</v-btn>
+      <p>Current volume level: {{ volume.toFixed(2) }}</p>
+    </v-col>
+  </v-row>
 </template>
