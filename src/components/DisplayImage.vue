@@ -1,7 +1,33 @@
 <script setup lang="ts">
+import { customColors } from '@/main'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { mdiChatOutline, mdiEyeClosed, mdiEyeOutline } from '@mdi/js'
+
+interface SelectedFiles {
+  [normal: string] : File | null,
+  blink: File | null,
+  talk: File | null
+}
+const selectedFiles = ref<SelectedFiles>({
+  normal: null,
+  blink: null,
+  talk: null
+})
+
+interface ImageUrl {
+  [normal: string]: string,
+  blink: string,
+  talk: string
+}
+const imageUrl = ref<ImageUrl>({
+  normal: '/src/assets/img/normal.png',
+  blink: '/src/assets/img/blink.png',
+  talk: '/src/assets/img/talk.png'
+})
 
 const displayImage = ref<string>('normal')
+const selectedBgColor = ref<string>('chromakeyGreen')
+const bgColors = Object.keys(customColors)
 
 // Blink settings
 const isActiveBlink = ref<boolean>(true)
@@ -17,6 +43,23 @@ const analyser = ref<AnalyserNode | null>(null)
 const microphone = ref<MediaStreamAudioSourceNode | null>(null)
 const animationFrameId = ref<number | null>(null)
 const threshold: number = 0.1 // 音量閾値（0.0〜1.0）
+
+/**
+ * Preview the selected image
+ * @param imgKind - 'normal', 'blink', or 'talk'
+ */
+const previewImage = (imgKind: string): void => {
+  if (selectedFiles.value[imgKind]) {
+    const file = selectedFiles.value[imgKind] as File
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      imageUrl.value[imgKind] = e.target?.result as string
+    }
+
+    reader.readAsDataURL(file);
+  }
+}
 
 /**
  * switch between normal and blink image at random interval
@@ -107,23 +150,59 @@ onBeforeUnmount(() => {
 
 <template>
   <v-row no-gutters>
-    <v-col
-      class="text-center"
-    >
-      <img
-        :src="`/src/assets/img/${displayImage}.png`"
-        width="50%"
-        class="my-10"
-      />
+    <v-col class="text-center">
+      <v-card
+        :style="{ 'background-color': `rgb(var(--v-theme-${selectedBgColor}))` }"
+      >
+        <v-img
+          :src="imageUrl[displayImage]"
+          alt="プレビュー画像"
+          max-height="1000"
+          class="my-10"
+        />
+      </v-card>
     </v-col>
   </v-row>
   <v-row>
-    <v-col class="text-center">
-  <v-btn @click="switchBlink">Switch Blink</v-btn>
+    <v-col>
+        <v-file-input
+          accept="image/*"
+          label="Normal Image"
+          show-size
+          v-model="selectedFiles.normal"
+          :prepend-icon="mdiEyeOutline"
+          @change="previewImage('normal')"
+        />
+        <v-file-input
+          accept="image/*"
+          label="Blink Image"
+          show-size
+          v-model="selectedFiles.blink"
+          :prepend-icon="mdiEyeClosed"
+          @change="previewImage('blink')"
+        />
+        <v-file-input
+          accept="image/*"
+          label="Talk Image"
+          show-size
+          v-model="selectedFiles.talk"
+          :prepend-icon="mdiChatOutline"
+          @change="previewImage('talk')"
+        />
+    </v-col>
+    <v-col>
+      <v-select
+        label="Background Color"
+        :items="bgColors"
+        v-model="selectedBgColor"
+      />
     </v-col>
     <v-col class="text-center">
-  <v-btn @click="startListening">Start Recording</v-btn>
-  <v-btn @click="stopListening">Stop Recording</v-btn>
+      <v-btn @click="switchBlink">Switch Blink</v-btn>
+    </v-col>
+    <v-col class="text-center">
+      <v-btn @click="startListening">Start Recording</v-btn>
+      <v-btn @click="stopListening">Stop Recording</v-btn>
       <p>Current volume level: {{ volume.toFixed(2) }}</p>
     </v-col>
   </v-row>
