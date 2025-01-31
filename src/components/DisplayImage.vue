@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { customColors } from '@/main'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 const displayImage = ref<string>('normal')
+const selectedBgColor = ref<string>('chromakeyGreen')
+const bgColors = Object.keys(customColors)
 
 // Blink settings
 const isActiveBlink = ref<boolean>(true)
@@ -109,6 +112,7 @@ onBeforeUnmount(() => {
   <v-row no-gutters>
     <v-col
       class="text-center"
+      :style="{ 'background-color': `rgb(var(--v-theme-${selectedBgColor}))` }"
     >
       <img
         :src="`/src/assets/img/${displayImage}.png`"
@@ -118,12 +122,19 @@ onBeforeUnmount(() => {
     </v-col>
   </v-row>
   <v-row>
-    <v-col class="text-center">
-  <v-btn @click="switchBlink">Switch Blink</v-btn>
+    <v-col>
+      <v-select
+        label="Background Color"
+        :items="bgColors"
+        v-model="selectedBgColor"
+      />
     </v-col>
     <v-col class="text-center">
-  <v-btn @click="startListening">Start Recording</v-btn>
-  <v-btn @click="stopListening">Stop Recording</v-btn>
+      <v-btn @click="switchBlink">Switch Blink</v-btn>
+    </v-col>
+    <v-col class="text-center">
+      <v-btn @click="startListening">Start Recording</v-btn>
+      <v-btn @click="stopListening">Stop Recording</v-btn>
       <p>Current volume level: {{ volume.toFixed(2) }}</p>
     </v-col>
   </v-row>
