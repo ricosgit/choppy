@@ -3,6 +3,10 @@ import { customColors } from '@/main'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { mdiChatOutline, mdiEyeClosed, mdiEyeOutline, mdiVolumeEqual, mdiVolumeHigh } from '@mdi/js'
 
+import normalImg from '@/assets/img/normal.png'
+import blinkImg from '@/assets/img/blink.png'
+import talkImg from '@/assets/img/talk.png'
+
 interface SelectedFiles {
   [normal: string] : File | null,
   blink: File | null,
@@ -20,9 +24,9 @@ interface ImageUrl {
   talk: string
 }
 const imageUrl = ref<ImageUrl>({
-  normal: '/src/assets/img/normal.png',
-  blink: '/src/assets/img/blink.png',
-  talk: '/src/assets/img/talk.png'
+  normal: normalImg,
+  blink: blinkImg,
+  talk: talkImg
 })
 
 const displayImage = ref<string>('normal')
@@ -151,7 +155,7 @@ onBeforeUnmount(() => {
         <v-img
           :src="imageUrl[displayImage]"
           alt="プレビュー画像"
-          max-height="1000"
+          max-height="700"
           class="my-10"
         />
       </v-card>
