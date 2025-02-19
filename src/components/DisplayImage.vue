@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { customColors } from '@/main'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { mdiChatOutline, mdiEyeClosed, mdiEyeOutline, mdiVolumeEqual, mdiVolumeHigh } from '@mdi/js'
+import { mdiChatOutline, mdiEyeClosed, mdiEyeOutline, mdiVolumeEqual, mdiVolumeHigh, mdiSpeedometerSlow } from '@mdi/js'
 
 import normalImg from '@/assets/img/normal.png'
 import blinkImg from '@/assets/img/blink.png'
@@ -48,6 +48,7 @@ const analyser = ref<AnalyserNode | null>(null)
 const microphone = ref<MediaStreamAudioSourceNode | null>(null)
 const animationFrameId = ref<number | null>(null)
 const threshold = ref<number>(0.1) // 0.0〜1.0
+const delay = ref<number>(0)
 
 /**
  * Preview the selected image
@@ -83,6 +84,18 @@ const blink = (): void => {
 }
 
 /**
+ * change the image after a certain delay
+ * @param imgKind - 'normal' or 'talk'
+ */
+const changeImageWithDelay = (imgKind: string): void => {
+  setTimeout(() => {
+    if (displayImage.value !== 'blink') {
+      displayImage.value = imgKind
+    }
+  }, delay.value * 1000)
+}
+
+/**
  * Analyze audio data and execute processing when the threshold is exceeded
  */
 const processAudio = (): void => {
@@ -96,8 +109,10 @@ const processAudio = (): void => {
   volume.value = avg / 256
 
   // switch display image when the volume exceeds the threshold
-  if (displayImage.value !== 'blink') {
-    displayImage.value = volume.value > threshold.value ? 'talk' : 'normal'
+  if (volume.value > threshold.value) {
+    changeImageWithDelay('talk')
+  } else {
+    changeImageWithDelay('normal')
   }
 
   animationFrameId.value = requestAnimationFrame(processAudio);
@@ -233,6 +248,16 @@ onBeforeUnmount(() => {
           thumb-label="always"
           :prepend-icon="mdiVolumeHigh"
           v-model="volume"
+        />
+        <v-slider
+          v-show="isActiveTalk"
+          label="Delay"
+          min="0"
+          max="10"
+          step="0.1"
+          thumb-label="always"
+          :prepend-icon="mdiSpeedometerSlow"
+          v-model="delay"
         />
       </v-card>
     </v-col>
